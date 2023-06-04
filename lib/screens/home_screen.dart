@@ -5,10 +5,11 @@ import '../utilities/constant.dart';
 import '../utilities/coin_widget.dart';
 import '../utilities/converter_widget.dart';
 
+// ignore: must_be_immutable
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.defaultExchange});
+  HomeScreen({super.key, this.defaultExchange});
 
-  final defaultExchange;
+  dynamic defaultExchange;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -24,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<ConverterWidget> updateUI(dynamic exchangeData) {
+    converterList.clear();
     for (var brain in widget.defaultExchange) {
       var newItem = ConverterWidget(
         coin: brain.coin,
@@ -35,11 +37,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return converterList;
   }
 
-  Future<List> getExchangeData(String? coin) async {
+  Future<List<Brain>> getExchangeData(String? selected) async {
     List<Brain> rates = [];
     for (var currency in currenciesList) {
       Brain brain = Brain(
-        coin: coin,
+        coin: selected,
         currency: currency,
       );
       brain.rate = await brain.getExchangeRate();
@@ -55,11 +57,11 @@ class _HomeScreenState extends State<HomeScreen> {
       var newItem = CoinWidget(
           coin: coins,
           onTap: () async {
-            var newexchange = getExchangeData("$coins");
-            setState(() {
-              updateUI(newexchange);
-            });
             print("tap $coins");
+            widget.defaultExchange = await getExchangeData("$coins");
+            setState(() {
+              updateUI(widget.defaultExchange);
+            });
           });
       coinWidgetList.add(newItem);
     }
