@@ -4,10 +4,11 @@ import '../utilities/configure.dart';
 const coinAPIURL = 'https://rest.coinapi.io/v1/exchangerate';
 
 class Brain {
-  Brain({this.coin, this.currency});
+  Brain({this.coin, this.currency, this.rate});
 
   String? coin;
   String? currency;
+  dynamic rate;
 
   Future<dynamic> getExchangeRate() async {
     Network network =

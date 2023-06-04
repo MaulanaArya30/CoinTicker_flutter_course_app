@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import '../services/brain.dart';
 import '../services/coin_data.dart';
 import '../utilities/constant.dart';
 import '../utilities/coin_widget.dart';
 import '../utilities/converter_widget.dart';
-import '../services/networking.dart';
-import '../services/brain.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.defaultExchange});
@@ -16,10 +15,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late double price;
-  late String coin;
-  late String currency;
-  var selectedCoin = true;
+  List<ConverterWidget> converterList = [];
 
   @override
   void initState() {
@@ -27,36 +23,47 @@ class _HomeScreenState extends State<HomeScreen> {
     updateUI(widget.defaultExchange);
   }
 
+  List<ConverterWidget> updateUI(dynamic exchangeData) {
+    for (var brain in widget.defaultExchange) {
+      var newItem = ConverterWidget(
+        coin: brain.coin,
+        currency: brain.currency,
+        price: brain.rate,
+      );
+      converterList.add(newItem);
+    }
+    return converterList;
+  }
+
+  Future<List> getExchangeData(String? coin) async {
+    List<Brain> rates = [];
+    for (var currency in currenciesList) {
+      Brain brain = Brain(
+        coin: coin,
+        currency: currency,
+      );
+      brain.rate = await brain.getExchangeRate();
+      brain.rate = brain.rate['rate'].toStringAsFixed(2);
+      rates.add(brain);
+    }
+    return rates;
+  }
+
   List<CoinWidget> getCoinWidget() {
-    List<CoinWidget> coinList = [];
+    List<CoinWidget> coinWidgetList = [];
     for (String coins in cryptoList) {
       var newItem = CoinWidget(
           coin: coins,
           onTap: () async {
-            Brain brain = Brain(
-              coin: coins,
-              currency: 'USD',
-            );
-            var rate = await brain.getExchangeRate();
-            updateUI(rate);
+            var newexchange = getExchangeData("$coins");
+            setState(() {
+              updateUI(newexchange);
+            });
+            print("tap $coins");
           });
-      coinList.add(newItem);
+      coinWidgetList.add(newItem);
     }
-    return coinList;
-  }
-
-  void updateUI(dynamic exchangeData) {
-    setState(() {
-      if (exchangeData == null) {
-        coin = 'coin';
-        currency = 'currency';
-        price = 0;
-        return;
-      }
-      coin = exchangeData['asset_id_base'];
-      currency = exchangeData['asset_id_quote'];
-      price = exchangeData['rate'];
-    });
+    return coinWidgetList;
   }
 
   @override
@@ -104,20 +111,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 40),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      ConverterWidget(
-                        coin: coin,
-                        currency: currency,
-                        price: price.toStringAsFixed(2),
-                      ),
-                      ConverterWidget(
-                        coin: coin,
-                        currency: 'AUD',
-                        price: price.toStringAsFixed(2),
-                      ),
-                    ],
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: converterList,
+                    ),
                   ),
                 ),
               ],

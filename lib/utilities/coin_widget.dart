@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import './constant.dart';
-import '../services/coin_data.dart';
 
 class CoinWidget extends StatelessWidget {
   const CoinWidget({

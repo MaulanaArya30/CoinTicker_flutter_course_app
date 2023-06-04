@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../services/brain.dart';
 import 'constant.dart';
 
 class ConverterWidget extends StatefulWidget {
